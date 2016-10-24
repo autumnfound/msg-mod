@@ -4,10 +4,12 @@ import net.minecraft.world.World;
 
 public class BlockUtil {
 
-	public static final int META_NORTH_FACING = 2;
-	public static final int META_SOUTH_FACING = 3; //3
-	public static final int META_EAST_FACING = 1; //1
-	public static final int META_WEST_FACING = 0; 
+	public static final int META_STAIR_NORTH_FACING = 2;
+	public static final int META_STAIR_SOUTH_FACING = 3; //3
+	public static final int META_STAIR_EAST_FACING = 1; //1
+	public static final int META_STAIR_WEST_FACING = 0;
+	
+	public static final int META_STAIR_INVERSE = 4; 
 	
 	/**
 	 * Returns the y position of the highest non-air block of a given (x,z) coordinate.

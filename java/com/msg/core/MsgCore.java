@@ -12,9 +12,8 @@ public class MsgCore {
     
     @EventHandler
     public void init(FMLInitializationEvent event) {
-    	// TODO 
+    	// Pretty sure this is early enough.
     	GameRegistry.registerWorldGenerator(new MsgWorldGen(), 1);
-
     }
 }
 
