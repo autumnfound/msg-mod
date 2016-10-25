@@ -18,13 +18,13 @@ import net.minecraft.world.chunk.IChunkProvider;
 public class MsgWorldGen implements IWorldGenerator {
 	private MsgFactory factory;
 	private PerlinNoise perlin;
-	private Map<Integer,Integer> currentStructures;
+	private Map<Integer, Integer> currentStructures;
 
 	public MsgWorldGen() {
 		super();
 		factory = new MsgFactory();
 		perlin = new PerlinNoise();
-		currentStructures = new HashMap<Integer,Integer>();
+		currentStructures = new HashMap<Integer, Integer>();
 	}
 
 	@Override
@@ -34,8 +34,8 @@ public class MsgWorldGen implements IWorldGenerator {
 		int x = chunkX * 16 + random.nextInt(16);
 		int z = chunkZ * 16 + random.nextInt(16);
 
-		int xWidth = random.nextInt(8) + 8;
-		int zWidth = random.nextInt(8) + 8;
+		int xWidth = random.nextInt(10) + 8;
+		int zWidth = random.nextInt(10) + 8;
 
 		float freq = 30f; // smaller means it will spawn more often
 		float p = perlin.noise2(x / freq, z / freq);
@@ -43,33 +43,35 @@ public class MsgWorldGen implements IWorldGenerator {
 		if (p > 0.85f) {
 			System.out.println(p + " x:" + x + " z:" + z);
 		}
-		if (p < 0.90f) {
+		if (p < 0.91f) {
 			// not attempting at this x,z
 			return;
 		}
-		
-		//check map to see if a structure has spawned nearby.
-		for (int i = chunkX-1; i <= chunkX+1; i ++) {
+
+		// check map to see if a structure has spawned nearby.
+		for (int i = chunkX - 1; i <= chunkX + 1; i++) {
 			Integer retrievedVal = currentStructures.get(i);
-			if (retrievedVal != null){
-				for (int j = chunkZ-1; j <= chunkZ+1;j++) {
-					if (retrievedVal == j){
+			if (retrievedVal != null) {
+				for (int j = chunkZ - 1; j <= chunkZ + 1; j++) {
+					if (retrievedVal == j) {
 						// match found, do not spawn
 						return;
 					}
 				}
 			}
 		}
-		
+
 		System.out.println("Attempting to spawn a building...");
 
-		int maxVariance = 3;
-		int y = (int) BlockUtil.getTopBlockY(world, x, z);
-		if (!world.getBlock(x, y - 1, z).isBlockNormalCube()) {
-			return; // above liquid, do not spawn
-		}
 		int dX = xWidth / 2;
 		int dZ = zWidth / 2;
+		
+		int maxVariance = 4;
+		int y = (int) BlockUtil.getTopBlockY(world, x+dX, z+dZ);
+		if (!world.getBlock(x+dX, y - 1, z+dZ).isBlockNormalCube()) {
+			return; // above liquid, do not spawn
+		}
+		
 		for (int i = -1; i <= 1; i++) {
 			for (int j = -1; j <= 1; j++) {
 				if (Math.abs(BlockUtil.getTopBlockY(world, x - dX * i, z - dZ * j) - y) > maxVariance) {
@@ -80,10 +82,11 @@ public class MsgWorldGen implements IWorldGenerator {
 
 		List<BlockData[][]> struct = factory.createStructure(xWidth, zWidth);
 		if (struct != null) {
+			// random chance of inverting X & Z offsets
 			boolean inverse = random.nextInt(100) > 50;
-			placeStructure(struct, world, x, y, z, inverse);
 			
-			fillUnderStructure(world,x,y,z,struct,inverse);
+			placeStructure(struct, world, x, y, z, inverse);
+			fillUnderStructure(struct, world, x, y, z, inverse);
 		}
 		// record where building spawned.
 		currentStructures.put(chunkX, chunkZ);
@@ -96,7 +99,7 @@ public class MsgWorldGen implements IWorldGenerator {
 	 * from the generate method.
 	 * 
 	 * @param structure
-	 *            arraylist containing layers of the structure to place.
+	 *            array list containing layers of the structure to place.
 	 * @param world
 	 *            world object to place the structure into.
 	 * @param x
@@ -140,26 +143,41 @@ public class MsgWorldGen implements IWorldGenerator {
 			}
 		}
 	}
-	
-	private void fillUnderStructure(World world, int x, int y, int z, List<BlockData[][]> struct, boolean inverse) {
-		/* TODO Fix this code
-		for (int xOffset = 0; xOffset < struct.get(0).length; xOffset++) {
-			for (int zOffset = 0; zOffset < struct.get(0)[0].length; zOffset++) {
+
+	/**
+	 * Writes blocks underneath structures to avoid floating buildings. Writes
+	 * until solid block is found.
+	 * 
+	 * @param structure
+	 *            array list containing layers of the structure to place.
+	 * @param world
+	 *            world object to place the structure into.
+	 * @param x
+	 *            X coordinate of the corner of the structure.
+	 * @param y
+	 *            Y coordinate of the corner of the structure.
+	 * @param z
+	 *            Z coordinate of the corner of the structure.
+	 * @param inverse
+	 *            whether the building X & Z offsets have been reversed
+	 */
+	private void fillUnderStructure(List<BlockData[][]> structure, World world, int x, int y, int z, boolean inverse) {
+		for (int xOffset = 0; xOffset < structure.get(0).length; xOffset++) {
+			for (int zOffset = 0; zOffset < structure.get(0)[0].length; zOffset++) {
 				int currentY = y;
 				if (!inverse) {
 					while (!world.getBlock(x + xOffset, currentY - 1, z + zOffset).isBlockNormalCube()) {
-						y--;
-						world.setBlock(x+xOffset, currentY, z+zOffset, Block.getBlockById(3));
+						currentY--;
+						world.setBlock(x + xOffset, currentY, z + zOffset, Block.getBlockById(3));
 					}
 				} else {
-					while(!world.getBlock(x+zOffset, currentY - 1, z+xOffset).isBlockNormalCube()) {
-						y--;
-						world.setBlock(x+zOffset, currentY, z+xOffset, Block.getBlockById(3));
+					while (!world.getBlock(x + zOffset, currentY - 1, z + xOffset).isBlockNormalCube()) {
+						currentY--;
+						world.setBlock(x + zOffset, currentY, z + xOffset, Block.getBlockById(3));
 					}
 				}
 			}
 		}
-		*/
 	}
 
 }
