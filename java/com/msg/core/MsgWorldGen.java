@@ -1,9 +1,7 @@
 package com.msg.core;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 import com.msg.core.util.BlockData;
@@ -18,13 +16,11 @@ import net.minecraft.world.chunk.IChunkProvider;
 public class MsgWorldGen implements IWorldGenerator {
 	private MsgFactory factory;
 	private PerlinNoise perlin;
-	private Map<Integer, Integer> currentStructures;
 
 	public MsgWorldGen() {
 		super();
 		factory = new MsgFactory();
 		perlin = new PerlinNoise();
-		currentStructures = new HashMap<Integer, Integer>();
 	}
 
 	@Override
@@ -37,60 +33,53 @@ public class MsgWorldGen implements IWorldGenerator {
 		int xWidth = random.nextInt(10) + 8;
 		int zWidth = random.nextInt(10) + 8;
 
-		float freq = 30f; // smaller means it will spawn more often
-		float p = perlin.noise2(x / freq, z / freq);
+		float freq = 15f; // smaller means it will spawn more often
+		float p = Math.abs(perlin.noise2(x / freq, z / freq));
 
+		//TODO remove me before beta.
 		if (p > 0.85f) {
 			System.out.println(p + " x:" + x + " z:" + z);
 		}
-		if (p < 0.91f) {
+		
+		if (p < 0.91f || p > 0.93f) {
 			// not attempting at this x,z
 			return;
 		}
 
-		// check map to see if a structure has spawned nearby.
-		for (int i = chunkX - 1; i <= chunkX + 1; i++) {
-			Integer retrievedVal = currentStructures.get(i);
-			if (retrievedVal != null) {
-				for (int j = chunkZ - 1; j <= chunkZ + 1; j++) {
-					if (retrievedVal == j) {
-						// match found, do not spawn
-						return;
-					}
-				}
-			}
-		}
-
+		//TODO remove me before beta.
 		System.out.println("Attempting to spawn a building...");
 
 		int dX = xWidth / 2;
 		int dZ = zWidth / 2;
-		
+
 		int maxVariance = 4;
-		int y = (int) BlockUtil.getTopBlockY(world, x+dX, z+dZ);
-		if (!world.getBlock(x+dX, y - 1, z+dZ).isBlockNormalCube()) {
-			return; // above liquid, do not spawn
+		int y = (int) BlockUtil.getTopBlockY(world, x + dX, z + dZ);
+		if (!world.getBlock(x + dX, y - 1, z + dZ).isBlockNormalCube()) {
+			// above liquid, do not spawn
+			return;
 		}
-		
+
 		for (int i = -1; i <= 1; i++) {
 			for (int j = -1; j <= 1; j++) {
 				if (Math.abs(BlockUtil.getTopBlockY(world, x - dX * i, z - dZ * j) - y) > maxVariance) {
-					return; // too much height variance
+					// too much height variance
+					return;
 				}
 			}
 		}
 
-		List<BlockData[][]> struct = factory.createStructure(xWidth, zWidth);
+		int floorCount = random.nextInt(2) + 1;
+
+		List<BlockData[][]> struct = factory.createStructure(xWidth, zWidth, floorCount);
 		if (struct != null) {
 			// random chance of inverting X & Z offsets
 			boolean inverse = random.nextInt(100) > 50;
-			
+
 			placeStructure(struct, world, x, y, z, inverse);
 			fillUnderStructure(struct, world, x, y, z, inverse);
 		}
-		// record where building spawned.
-		currentStructures.put(chunkX, chunkZ);
-
+		
+		//TODO remove me before beta.
 		System.out.println("[MSG] Spawned a building!! (" + x + "," + y + "," + z + ")");
 	}
 

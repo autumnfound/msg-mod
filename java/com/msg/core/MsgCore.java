@@ -9,11 +9,15 @@ import cpw.mods.fml.common.registry.GameRegistry;
 public class MsgCore {
     public static final String MODID = "msg-core";
     public static final String VERSION = "0.0.1";
+    private MsgWorldGen worldGen;
     
     @EventHandler
     public void init(FMLInitializationEvent event) {
+    	worldGen = new MsgWorldGen();
     	// Pretty sure this is early enough.
-    	GameRegistry.registerWorldGenerator(new MsgWorldGen(), 1);
+    	GameRegistry.registerWorldGenerator(worldGen, 1);
     }
+    
+    
 }
 
