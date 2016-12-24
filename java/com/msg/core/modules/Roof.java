@@ -6,6 +6,8 @@ import java.util.List;
 import com.msg.core.util.BlockData;
 import com.msg.core.util.BlockUtil;
 
+import net.minecraft.block.Block;
+
 public class Roof {
 	/**
 	 * 
@@ -32,24 +34,24 @@ public class Roof {
 					for (int zOffset = 0; zOffset < zWidth; zOffset++) {
 						if (xOffset < layerCount) {
 							// if first half of building
-							layer[xOffset][zOffset] = new BlockData(style[0], BlockUtil.META_STAIR_WEST_FACING, true);
+							layer[xOffset][zOffset] = new BlockData(Block.getBlockById(style[0]), BlockUtil.META_STAIR_EAST_FACING, true);
 						} else {
 							// if second half of building.
-							layer[xOffset][zOffset] = new BlockData(style[0], BlockUtil.META_STAIR_EAST_FACING, true);
+							layer[xOffset][zOffset] = new BlockData(Block.getBlockById(style[0]), BlockUtil.META_STAIR_WEST_FACING, true);
 						}
 					}
 					// odd width, write wall blocks between stairs.
 					if (xWidth % 2 == 1 && currentLayer == layerCount - 1) {
 						for (int zOffset = 0; zOffset < zWidth; zOffset++) {
 							// layerCount will represent middle of 0-based array
-							layer[layerCount][zOffset] = new BlockData(style[2], -1);
+							layer[layerCount][zOffset] = new BlockData(Block.getBlockById(style[2]), -1);
 						}
 					}
 				} else if (currentLayer > xOffset || xOffset > xWidth - 1 - currentLayer) {
 					// check if current x layer denotes a z layer outside the building.
 					for (int zOffset = 0; zOffset < zWidth; zOffset++) {
 						// when outside of roof, write non-writing ID's
-						layer[xOffset][zOffset] = new BlockData(-1, -1);
+						layer[xOffset][zOffset] = new BlockData(null, -1);
 					}
 				} else {
 					// writing inner walls between edges of roof.
@@ -59,26 +61,26 @@ public class Roof {
 						if (xOffset == currentLayer + 1 || xOffset == xWidth - 2 - currentLayer) {
 							if (xOffset < layerCount) {
 								// if first half of building
-								layer[xOffset][outerEdgeZ] = new BlockData(style[0],
-										BlockUtil.META_STAIR_EAST_FACING + BlockUtil.META_STAIR_INVERSE, true);
+								layer[xOffset][outerEdgeZ] = new BlockData(Block.getBlockById(style[0]),
+										BlockUtil.META_STAIR_WEST_FACING + BlockUtil.META_STAIR_INVERSE, true);
 							} else {
 								// if second half of building.
-								layer[xOffset][outerEdgeZ] = new BlockData(style[0],
-										BlockUtil.META_STAIR_WEST_FACING + BlockUtil.META_STAIR_INVERSE, true);
+								layer[xOffset][outerEdgeZ] = new BlockData(Block.getBlockById(style[0]),
+										BlockUtil.META_STAIR_EAST_FACING + BlockUtil.META_STAIR_INVERSE, true);
 							}
 						} else {
 							// when not before/after a roof layer, write non-writing
 							// ID's for outer edge.
-							layer[xOffset][0] = new BlockData(-1, -1);
-							layer[xOffset][zWidth - 1] = new BlockData(-1, -1);
+							layer[xOffset][0] = new BlockData(null, -1);
+							layer[xOffset][zWidth - 1] = new BlockData(null, -1);
 						}
 					}
 					// write inner walls as well as air within the building.
-					layer[xOffset][1] = new BlockData(style[1], -1);
+					layer[xOffset][1] = new BlockData(Block.getBlockById(style[1]), -1);
 					for (int zOffset = 2; zOffset < zWidth - 2; zOffset++) {
-						layer[xOffset][zOffset] = new BlockData(0, -1);
+						layer[xOffset][zOffset] = new BlockData(Block.getBlockById(0), -1);
 					}
-					layer[xOffset][zWidth - 2] = new BlockData(style[1], -1);
+					layer[xOffset][zWidth - 2] = new BlockData(Block.getBlockById(style[1]), -1);
 				}
 			}
 			roof.add(layer);

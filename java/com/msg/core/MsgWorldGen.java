@@ -10,6 +10,7 @@ import com.msg.core.util.PerlinNoise;
 
 import cpw.mods.fml.common.IWorldGenerator;
 import net.minecraft.block.Block;
+import net.minecraft.item.ItemDoor;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.IChunkProvider;
 
@@ -29,32 +30,23 @@ public class MsgWorldGen implements IWorldGenerator {
 		// pick an (x,z) for building to spawn.
 		int x = chunkX * 16 + random.nextInt(16);
 		int z = chunkZ * 16 + random.nextInt(16);
-
-		int xWidth = random.nextInt(10) + 8;
-		int zWidth = random.nextInt(10) + 8;
+		int xWidth = random.nextInt(8) + 8;
+		int zWidth = random.nextInt(8) + 8;
 
 		float freq = 15f; // smaller means it will spawn more often
 		float p = Math.abs(perlin.noise2(x / freq, z / freq));
 
-		//TODO remove me before beta.
-		if (p > 0.85f) {
-			System.out.println(p + " x:" + x + " z:" + z);
-		}
-		
 		if (p < 0.91f || p > 0.93f) {
 			// not attempting at this x,z
 			return;
 		}
 
-		//TODO remove me before beta.
-		System.out.println("Attempting to spawn a building...");
-
 		int dX = xWidth / 2;
 		int dZ = zWidth / 2;
 
-		int maxVariance = 4;
+		int maxVariance = 3;
 		int y = (int) BlockUtil.getTopBlockY(world, x + dX, z + dZ);
-		if (!world.getBlock(x + dX, y - 1, z + dZ).isBlockNormalCube()) {
+		if (!world.getBlock(x + dX, y - 1, z + dZ).isNormalCube()) {
 			// above liquid, do not spawn
 			return;
 		}
@@ -75,12 +67,12 @@ public class MsgWorldGen implements IWorldGenerator {
 			// random chance of inverting X & Z offsets
 			boolean inverse = random.nextInt(100) > 50;
 
-			placeStructure(struct, world, x, y, z, inverse);
-			fillUnderStructure(struct, world, x, y, z, inverse);
+			placeStructure(struct, world, x, y - 1, z, inverse);
+			fillUnderStructure(struct, world, x, y - 1, z, inverse);
 		}
-		
-		//TODO remove me before beta.
-		System.out.println("[MSG] Spawned a building!! (" + x + "," + y + "," + z + ")");
+
+		// TODO remove me before beta.
+		System.out.println("[DEBUG - MSG] Spawned a building!! (" + x + "," + y + "," + z + ")");
 	}
 
 	/**
@@ -105,29 +97,18 @@ public class MsgWorldGen implements IWorldGenerator {
 				BlockData[][] layer = iter.next();
 				for (int xOffset = 0; xOffset < layer.length; xOffset++) {
 					for (int zOffset = 0; zOffset < layer[xOffset].length; zOffset++) {
-						if (layer[xOffset][zOffset].getBlockID() >= 0) {
-							// invert the offsets to simulate rotating the
-							// buildings.
-							if (swapXZValues) {
-								world.setBlock(x + zOffset, y + i, z + xOffset,
-										Block.getBlockById(layer[xOffset][zOffset].getBlockID()));
-								// set block metadata w/ swapped x/z offsets
-								if (layer[xOffset][zOffset].getMetadata() >= 0) {
-									world.setBlockMetadataWithNotify(x + zOffset, y + i, z + xOffset,
-											layer[xOffset][zOffset].rotateStairs().getMetadata(), 3);
-								}
-								// set the blocks with standard method.
-							} else {
-								world.setBlock(x + xOffset, y + i, z + zOffset,
-										Block.getBlockById(layer[xOffset][zOffset].getBlockID()));
-								// set block metadata
-								if (layer[xOffset][zOffset].getMetadata() >= 0) {
-									world.setBlockMetadataWithNotify(x + xOffset, y + i, z + zOffset,
-											layer[xOffset][zOffset].getMetadata(), 3);
-								}
-							}
+						// invert the offsets to simulate rotating the
+						// buildings.
+						if (swapXZValues) {
+							layer[xOffset][zOffset].rotateBlock();
+							setBlockInWorld(world, x + zOffset, y + i, z + xOffset, layer[xOffset][zOffset]);
+							
+							// set the blocks with standard method.
+						} else {
+							setBlockInWorld(world, x + xOffset, y + i, z + zOffset, layer[xOffset][zOffset]);
 						}
 					}
+
 				}
 			}
 		}
@@ -155,15 +136,29 @@ public class MsgWorldGen implements IWorldGenerator {
 			for (int zOffset = 0; zOffset < structure.get(0)[0].length; zOffset++) {
 				int currentY = y;
 				if (!inverse) {
-					while (!world.getBlock(x + xOffset, currentY - 1, z + zOffset).isBlockNormalCube()) {
+					while (!world.getBlock(x + xOffset, currentY - 1, z + zOffset).isNormalCube()) {
 						currentY--;
 						world.setBlock(x + xOffset, currentY, z + zOffset, Block.getBlockById(3));
 					}
 				} else {
-					while (!world.getBlock(x + zOffset, currentY - 1, z + xOffset).isBlockNormalCube()) {
+					while (!world.getBlock(x + zOffset, currentY - 1, z + xOffset).isNormalCube()) {
 						currentY--;
 						world.setBlock(x + zOffset, currentY, z + xOffset, Block.getBlockById(3));
 					}
+				}
+			}
+		}
+	}
+	
+	private void setBlockInWorld(World world, int x, int y, int z, BlockData block) {
+		if (block.getBlock() != null) {
+			if (Block.getIdFromBlock(block.getBlock()) == 64) {
+				ItemDoor.placeDoorBlock(world, x, y, z, block.getMetadata(), block.getBlock());
+			} else {
+				world.setBlock(x, y, z, block.getBlock());
+				
+				if (block.getMetadata() >= 0) {
+					world.setBlockMetadataWithNotify(x, y, z, block.getMetadata(), 3);
 				}
 			}
 		}

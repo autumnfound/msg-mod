@@ -5,10 +5,11 @@ import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.registry.GameRegistry;
 
-@Mod(modid = MsgCore.MODID, version = MsgCore.VERSION)
+@Mod(modid = MsgCore.MODID, version = MsgCore.VERSION, acceptableRemoteVersions = "*")
 public class MsgCore {
     public static final String MODID = "msg-core";
-    public static final String VERSION = "0.0.1";
+    public static final String VERSION = "0.1";
+    
     private MsgWorldGen worldGen;
     
     @EventHandler
@@ -17,7 +18,4 @@ public class MsgCore {
     	// Pretty sure this is early enough.
     	GameRegistry.registerWorldGenerator(worldGen, 1);
     }
-    
-    
 }
-

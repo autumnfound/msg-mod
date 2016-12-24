@@ -23,7 +23,11 @@ public class MsgFactory {
 			if (floorCount > 0 && i != floorCount - 1) {
 				Walls.generateStairs(walls, new int[] { 53, 5 });
 			}
-			
+
+			if (i == 0) {
+				Walls.generateDoors(walls, new int[] { 64, -1 });
+			}
+
 			structure.add(floor);
 			structure.addAll(walls);
 		}

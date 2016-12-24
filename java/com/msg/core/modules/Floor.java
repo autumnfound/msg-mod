@@ -3,6 +3,8 @@ package com.msg.core.modules;
 import com.msg.core.util.BlockData;
 import com.msg.core.util.BlockUtil;
 
+import net.minecraft.block.Block;
+
 public class Floor {
 	/**
 	 * 
@@ -23,7 +25,7 @@ public class Floor {
 		// space.
 		BlockData[] outerLayer = new BlockData[zWidth];
 		for (int i = 0; i < zWidth; i++)
-			outerLayer[i] = new BlockData(-1, -1);
+			outerLayer[i] = new BlockData(null, -1);
 		floor[0] = outerLayer;
 		// create the floor 2d int array.
 		for (int xOffset = 1; xOffset < xWidth - 1; xOffset++) {
@@ -31,16 +33,16 @@ public class Floor {
 			// otherwise use walls+floors
 			int styleSet = (xOffset == 1 || xOffset == xWidth - 2) ? 0 : 1;
 			// write non-writing block around edge of layer.
-			floor[xOffset][0] = new BlockData(-1, -1);
+			floor[xOffset][0] = new BlockData(null, -1);
 
-			floor[xOffset][1] = new BlockData(style[styleSet], -1);
+			floor[xOffset][1] = new BlockData(Block.getBlockById(style[styleSet]), -1);
 			for (int zOffset = 2; zOffset < zWidth - 2; zOffset++) {
-				floor[xOffset][zOffset] = new BlockData(style[styleSet + 1], -1);
+				floor[xOffset][zOffset] = new BlockData(Block.getBlockById(style[styleSet + 1]), -1);
 			}
-			floor[xOffset][zWidth - 2] = new BlockData(style[styleSet], -1);
+			floor[xOffset][zWidth - 2] = new BlockData(Block.getBlockById(style[styleSet]), -1);
 
 			// write non-writing block around edge of layer.
-			floor[xOffset][zWidth - 1] = new BlockData(-1, -1);
+			floor[xOffset][zWidth - 1] = new BlockData(null, -1);
 		}
 		floor[xWidth - 1] = outerLayer;
 
@@ -62,14 +64,14 @@ public class Floor {
 
 		// set metadata for which direction stairs should face.
 		if (isXWidest) {
-			stairMetadata = BlockUtil.META_STAIR_WEST_FACING;
+			stairMetadata = BlockUtil.META_STAIR_EAST_FACING;
 		} else {
-			stairMetadata = BlockUtil.META_STAIR_NORTH_FACING;
+			stairMetadata = BlockUtil.META_STAIR_SOUTH_FACING;
 		}
 		
 		// loop through the floor and remove blocks for a stairwell
 		for (int i = 3; i < (isXWidest ? xWidth : zWidth) - 3; i++) {
-			currentFloor[xOffset][zOffset].setBlockID(-1);
+			currentFloor[xOffset][zOffset].setBlock(null);
 			currentFloor[xOffset][zOffset].setMetadata(-1);
 			
 			// increment offset depending on which wall is being written to
@@ -81,7 +83,7 @@ public class Floor {
 		}
 		
 		// set stair block to finish stair case.
-		currentFloor[xOffset][zOffset].setBlockID(style[0]);
+		currentFloor[xOffset][zOffset].setBlock(Block.getBlockById(style[0]));
 		currentFloor[xOffset][zOffset].setMetadata(stairMetadata);
 		currentFloor[xOffset][zOffset].setStairs(true);
 

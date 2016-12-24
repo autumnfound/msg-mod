@@ -1,5 +1,7 @@
 package com.msg.core.util;
 
+import net.minecraft.block.Block;
+
 /**
  * Block data class for storing and retrieving data about a block and its
  * metadata.
@@ -8,9 +10,10 @@ package com.msg.core.util;
  *
  */
 public class BlockData {
-	private int blockID;
+	private Block block;
 	private int metadata;
 	private boolean isStairs = false;
+	private boolean isDoor;
 
 	/**
 	 * Default constructor for BlockData, sets the initial blockID and metadata.
@@ -20,21 +23,24 @@ public class BlockData {
 	 * @param metadata
 	 *            metadata value for the block (between 0-15)
 	 */
-	public BlockData(int blockID, int metadata) {
-		this.blockID = blockID;
+	public BlockData(Block block, int metadata) {
+		this.block = block;
 		this.metadata = metadata;
 	}
-	
+
 	/**
-	 * Overloaded constructor for BlockData, sets the block data as a stair type.
+	 * Overloaded constructor for BlockData, sets the block data as a stair
+	 * type.
 	 * 
 	 * @param blockID
 	 *            numerical blockID for given block
 	 * @param metadata
 	 *            metadata value for the block (between 0-15)
+	 * @param isStairs
+	 *            boolean representing whether the block is a stair block.
 	 */
-	public BlockData(int blockID, int metadata, boolean isStairs) {
-		this.blockID = blockID;
+	public BlockData(Block block, int metadata, boolean isStairs) {
+		this.block = block;
 		this.metadata = metadata;
 		this.isStairs = isStairs;
 	}
@@ -42,16 +48,16 @@ public class BlockData {
 	/**
 	 * @return the blockID
 	 */
-	public int getBlockID() {
-		return blockID;
+	public Block getBlock() {
+		return block;
 	}
 
 	/**
 	 * @param blockID
 	 *            the blockID to set
 	 */
-	public void setBlockID(int blockID) {
-		this.blockID = blockID;
+	public void setBlock(Block block) {
+		this.block = block;
 	}
 
 	/**
@@ -82,17 +88,59 @@ public class BlockData {
 	/**
 	 * @param isStairs
 	 *            the isStairs to set
-	 * @return 
 	 */
 	public void setStairs(boolean isStairs) {
 		this.isStairs = isStairs;
 	}
 
-	public BlockData rotateStairs() {
-		if (isStairs) {
-			metadata+=2;
+	/**
+	 * @return the isDoor
+	 */
+	public boolean isDoor() {
+		return isDoor;
+	}
+
+	/**
+	 * @param isDoor
+	 *            the isDoor to set
+	 */
+	public void setDoor(boolean isDoor) {
+		this.isDoor = isDoor;
+	}
+
+	public BlockData rotateBlock() {
+		if (isStairs && metadata >= 0) {
+			int newMeta = metadata;
+			if (metadata >= BlockUtil.META_STAIR_INVERSE) {
+				newMeta -= BlockUtil.META_STAIR_INVERSE;
+			}
+
+			newMeta += 2;
+			if (newMeta > 3) {
+				newMeta = 0;
+			}
+
+			if (metadata >= BlockUtil.META_STAIR_INVERSE) {
+				newMeta += BlockUtil.META_STAIR_INVERSE;
+			}
+			metadata = newMeta;
+		} else if (isDoor && metadata >= 0) {
+
+			int newMeta = metadata;
+			if (metadata >= 8) {
+				newMeta -= 8;
+			}
+
+			newMeta -= 1;
+			if (newMeta < 0) {
+				newMeta = 3;
+			}
+
+			if (metadata >= 8) {
+				newMeta += 8;
+			}
+			metadata = newMeta;
 		}
 		return this;
 	}
-
 }
