@@ -1,0 +1,16 @@
+[
+{
+  "modid": "msg",
+  "name": "Modular Structure Generator",
+  "description": "Creates dynamic structures within the world.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["autumnfound"],
+  "credits": "HempMonkey for being the sound board for this mod and helping with a few of the more technical aspects.",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
